@@ -6,6 +6,7 @@ from read import leitura_marcas, leituratodos
 from delete import adeus_banco
 import pandas as pd
 
+
 class Tela():
     def __init__(self):
         self.janela = Tk()
@@ -18,6 +19,7 @@ class Tela():
         self.listar_marcas()
         self.janela.mainloop()
         self.janela.update()
+        # self.exportar_dados()
 
     def tela(self):
         """
@@ -42,7 +44,6 @@ class Tela():
         self.frame2 = Frame(self.janela, bg='#FDD2A3')
         self.frame2.place(relx=0.03, rely=0.36, relwidth=0.94, relheight=0.60)
 
-
     def labels(self):
         """
         :return: função para a labels
@@ -61,34 +62,30 @@ class Tela():
         :return: função para os botões
         """
         self.bt = Button(self.frame0, text="Armazenar dados", command=self.dados)
-        self.bt.place(relx=0.42, rely=0.35, relwidth=0.1, relheight=0.50)
+        self.bt.place(relx=0.23, rely=0.35, relwidth=0.1, relheight=0.50)
 
         self.btRead = Button(self.frame0, text="Exibir dados", command=self.ler_banco)
-        self.btRead.place(relx=0.56, rely=0.35, relwidth=0.1, relheight=0.50)
+        self.btRead.place(relx=0.43, rely=0.35, relwidth=0.1, relheight=0.50)
 
         self.btDelete = Button(self.frame0, text="Deletar dados", command=self.apagar_dados)
-        self.btDelete.place(relx=0.70, rely=0.35, relwidth=0.1, relheight=0.50)
-
-        self.btExportar = Button(self.frame0, text="Exportar", command=lambda: self.exportar_dados(self.site.get()))
-        self.btExportar.place(relx=0.26, rely=0.35, relwidth=0.1, relheight=0.50)
+        self.btDelete.place(relx=0.60, rely=0.35, relwidth=0.1, relheight=0.50)
 
     def listar_marcas(self):
         """
         :return: função para DropDrown das marcas e dos formatos de arquivos no pandas
         """
         self.site = StringVar(self.frame1)
-        self.marcas = ("Samsung", "Motorola", "Apple", "LG", "Xiaomi")
+        self.marcas = ["Samsung", "Motorola", "Apple", "LG", "Xiaomi"]
 
-        self.menu = OptionMenu(self.frame1, self.site, *self.marcas, command= lambda x: self.produtos(self.site.get().lower()))
+        self.menu = OptionMenu(self.frame1, self.site, *self.marcas, command=lambda x: self.produtos(self.site.get()))
         self.menu.place(relx=0.55, rely=0.35, relwidth=0.30, relheight=0.55)
 
         self.planilha = StringVar(self.frame1)
-        self.arquivos = ("csv", "xlsx")
+        self.arquivos = ["csv", "xlsx"]
 
         self.panda = OptionMenu(self.frame1, self.planilha, *self.arquivos,
-                               command=lambda x: self.exportar_dados(self.site.get().lower()))
+                                command=lambda x: self.exportar_dados(self.planilha.get()))
         self.panda.place(relx=0.15, rely=0.35, relwidth=0.30, relheight=0.55)
-
 
     def listar_frame(self):
         """
@@ -116,7 +113,6 @@ class Tela():
         self.scrollLista = Scrollbar(self.frame2, orient='vertical')
         self.listaPro.configure(yscrollcommand=self.scrollLista.set)
         self.scrollLista.place(relx=0.96, rely=0.10, relwidth=0.030, relheight=0.88)
-
 
     def produtos(self, marca):
         """
@@ -175,15 +171,18 @@ class Tela():
         :param plan: parâmetro para criação dos arquivos xlsx ou csv
         :return: exporta os dados nos arquivos tanto em formato csv ou xlsx
         """
+
+        df = pd.DataFrame(self.mostrar_banco(), columns=["ID", "Marca", "Modelo", "Preço"])
         if plan == 'csv':
-            df = pd.DataFrame(leituratodos(), leitura_marcas(self.site.get().lower()), columns=["ID", "Marca", "Modelo", "Preço"])
             df.to_csv("dados_colombo.csv", index=False, sep='\t')
 
-        elif plan == 'xlsx':
-            df = pd.DataFrame(leituratodos(), leitura_marcas(self.site.get().lower()), columns=["ID", "Marca", "Modelo", "Preço"])
-            df.to_excel("dados_colombo.xlsx", index=False)
 
-        messagebox.showinfo("Exportação concluída", f"Dados exportados como {plan.upper()}")#mensagem
+        elif plan == 'xlsx':
+            escreve = pd.ExcelWriter("./dados_colombo.xlsx")
+            df.to_excel(escreve, sheet_name="Sheet1", index=False, header=False)
+            escreve.close()
+
+        messagebox.showinfo("Exportação concluída", f"Dados exportados como {plan.upper()}")  # mensagem
 
 
 Tela()
